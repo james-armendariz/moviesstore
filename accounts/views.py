@@ -4,6 +4,7 @@ from .forms import CustomUserCreationForm, CustomErrorList
 from django.shortcuts import redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from cart.models import Order
 
 @login_required
 def logout(request):
@@ -48,3 +49,20 @@ def orders(request):
     template_data['title'] = 'Orders'
     template_data['orders'] = request.user.order_set.all()
     return render(request, 'accounts/orders.html', {'template_data': template_data})
+
+@login_required
+def subscription(request):
+    template_data = {}
+    template_data['title'] = 'Subscription'
+    # Sum all orders' totals for the current user
+    total_spend = sum(order.total for order in Order.objects.filter(user=request.user))
+    # Determine subscription level
+    if total_spend <= 15:
+        level = 'Basic'
+    elif total_spend <= 30:
+        level = 'Medium'
+    else:
+        level = 'Premium'
+    template_data['total_spend'] = total_spend
+    template_data['level'] = level
+    return render(request, 'accounts/subscription.html', {'template_data': template_data})
