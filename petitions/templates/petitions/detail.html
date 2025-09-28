@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+{% block content %}
+{% load static %}
+
+<div class="p-3">
+    <div class="containter">
+        <div class="row mt-3">
+            <div class="col-md-8 mx-auto">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h2>{{ template_data.petition.movie_title }}</h2>
+                    <a href="{% url 'petitions.index' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Petitions
+                    </a>
+                </div>
+                <hr />
+
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                {{ messsage }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
+                <div class="card">
+                    <div class="card-body">
+                        <h4 class="card-title">{{ template_data.petition.title }}</h4>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <p class="mb-1"><strong>Movie:</strong> {{ template_data.petition.movie_title }}</p>
+                                {% if template_data.petition.movie_year %}
+                                <p class="mb-1"><strong>Year:</strong> {{ template_data.petition.movie_year }}</p>
+                                {% endif %}
+                                {% if template_data.petition.movie_director %}
+                                <p class="mb-1"><strong>Director:</strong> {{ template_data.petition.movie_director }}</p>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <p class="mb-1"><strong>Created by:</strong> {{ template_data.petition.created_by.username }}</p>
+                                <p class="mb-1"><strong>Date:</strong> {{ template_data.petition.created_at|date:"F d, Y" }}</p>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <h5>Description</h5>
+                            <p class="text-muted">{{ template_data.petition.description|linebreaks }}</p>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <div class="vote-stats">
+                                <span class="badge bg-success me-2 fs-6">
+                                    <i class="fas fa-thumbs-up me-1"></i>{{ template_data.petition.vote_count }} Yes
+                                </span>
+                                <span class="badge bg-secondary fs-6">
+                                    <i class="fas fa-vote-yea me-1"></i>{{ template_data.petition.total_votes }} Total Votes
+                                </span>
+                            </div>
+
+                            {% if user.is_authenticated %}
+                            <div class="vote-buttons">
+                                {% if template_data.user_vote %}
+                                    <p class="text-muted mb-2">Your vote:
+                                        <span class="badge {% if template_data.user_vote.vote_type == 'yes' %}bg-success{% else %}bg-secondary{% endif %}">
+                                            {{ template_data.user_vote.vote_type|title }}
+                                        </span>
+                                    </p>
+                                {% endif %}
+                                <form method="POST" action="{% url 'petitions.vote' template_data.petition.id %}" class="d-inline">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="vote_type" value="yes">
+                                    <button type="submit" class="btn btn-success me-2">
+                                        <i class="fas fa-thumbs-up me-1"></i>Vote Yes
+                                    </button>
+                                </form>
+                                <form method="POST" action="{% url 'petitions.vote' template_data.petition.id %}" class="d-inline">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="vote_type" value="yes">
+                                    <button type="submit" class="btn btn-outline-secondary">
+                                        <i class="fas fa-thumbs-down me-1"></i>Vote No
+                                    </button>
+                                </form>
+                            </div>
+                            {% else %}
+                            <p class="text-muted"> Please <a href="{% url 'accounts.login' %}">login</a> to vote on this petition.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                {% if template_data.votes %}
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Recent Votes</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>User</th>
+                                        <th>Vote</th>
+                                        <th>Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for vote in template_data.votes|slice:":10" %}
+                                    <tr>
+                                        <td>{{ vote.user.username }}</td>
+                                        <td>
+                                            <span class="badge {% if vote.vote_type == 'yes' %}bg-success{% else %}bg-secondary{% endif %}">
+                                                {{ vote.vote_type|title }}
+                                            </span>
+                                        </td>
+                                        <td>{{ vote.created_at|date:"M d, Y H:i" }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% if template_data.petition.total_votes > 10 %}
+                        <p class="text-muted small">Showing last 10 votes of {{ template_data.petition.total_votes }} total votes.</p>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
