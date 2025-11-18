@@ -1,10 +1,11 @@
 from django.shortcuts import render
 from django.contrib.auth import login as auth_login, authenticate, logout as auth_logout
-from .forms import CustomUserCreationForm, CustomErrorList
+from .forms import CustomUserCreationForm, CustomErrorList, ProfilePictureForm
 from django.shortcuts import redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from cart.models import Order
+from .models import UserProfile
 
 @login_required
 def logout(request):
@@ -66,3 +67,25 @@ def subscription(request):
     template_data['total_spend'] = total_spend
     template_data['level'] = level
     return render(request, 'accounts/subscription.html', {'template_data': template_data})
+
+@login_required
+def profile(request):
+    template_data = {}
+    template_data['title'] = 'User Profile'
+    
+    # Get or create user profile
+    profile, created = UserProfile.objects.get_or_create(user=request.user)
+    
+    if request.method == 'POST':
+        form = ProfilePictureForm(request.POST, request.FILES, instance=profile)
+        if form.is_valid():
+            form.save()
+            template_data['success_message'] = 'Profile picture updated successfully!'
+            template_data['form'] = ProfilePictureForm(instance=profile)
+        else:
+            template_data['form'] = form
+    else:
+        template_data['form'] = ProfilePictureForm(instance=profile)
+    
+    template_data['profile'] = profile
+    return render(request, 'accounts/profile.html', {'template_data': template_data})

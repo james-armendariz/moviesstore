@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<section class="py-5">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-md-8">
+        <div class="card shadow-sm">
+          <div class="card-body">
+            <h3 class="card-title mb-4">User Profile</h3>
+            
+            <!-- Display current profile picture -->
+            <div class="text-center mb-4">
+              {% if template_data.profile.profile_picture %}
+                <img src="{{ template_data.profile.profile_picture.url }}" 
+                     alt="Profile Picture" 
+                     class="rounded-circle" 
+                     style="width: 150px; height: 150px; object-fit: cover; border: 3px solid #2E2E2E;">
+              {% else %}
+                <div class="rounded-circle d-inline-flex align-items-center justify-content-center bg-secondary text-white" 
+                     style="width: 150px; height: 150px; border: 3px solid #2E2E2E; font-size: 60px;">
+                  <i class="fas fa-user"></i>
+                </div>
+              {% endif %}
+              <p class="mt-2"><strong>Username:</strong> {{ user.username }}</p>
+            </div>
+            
+            <!-- Success message -->
+            {% if template_data.success_message %}
+            <div class="alert alert-success" role="alert">
+              {{ template_data.success_message }}
+            </div>
+            {% endif %}
+            
+            <!-- Upload form -->
+            <hr />
+            <h5 class="mb-3">Update Profile Picture</h5>
+            <form method="POST" enctype="multipart/form-data">
+              {% csrf_token %}
+              <div class="mb-3">
+                <label for="{{ template_data.form.profile_picture.id_for_label }}" class="form-label">Choose a new profile picture:</label>
+                {{ template_data.form.profile_picture }}
+                {% if template_data.form.profile_picture.errors %}
+                  <div class="text-danger">
+                    {% for error in template_data.form.profile_picture.errors %}
+                      <div>{{ error }}</div>
+                    {% endfor %}
+                  </div>
+                {% endif %}
+              </div>
+              <button type="submit" class="btn bg-dark text-white">Upload Picture</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock content %}
+
